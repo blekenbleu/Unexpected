@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Unexpected": {
+      "commandName": "Executable",
+      "executablePath": "..\\SimHubWPF.exe",
+      "workingDirectory": "..\\"
+    }
+  }
+}
