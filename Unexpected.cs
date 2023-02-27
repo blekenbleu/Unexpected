@@ -28,6 +28,24 @@ namespace SimHubPlugin
 
 		private byte[] now;
 
+		private void Attach(byte index)
+		{
+			switch (index)
+			{
+				case 0:
+					this.AttachDelegate("expect5", () => Settings.CCvalue[0]);
+					break;
+				case 1:
+					this.AttachDelegate("expect6", () => Settings.CCvalue[1]);
+					break;
+				case 2:
+					this.AttachDelegate("Unexpected.InitCount", () => Settings.CCvalue[2]);
+					break;
+				default:
+					Info($"Attach({index}): unsupported value");
+					break;
+			}
+		}
 		/// <summary>
 		/// Instance of the current plugin manager
 		/// </summary>
@@ -44,12 +62,7 @@ namespace SimHubPlugin
 		/// <param name="data">Current game data, including current and previous data frame.</param>
 		public void DataUpdate(PluginManager pluginManager, ref GameData data)
 		{
-			for (byte i = 0; i < now.Length; i++)
-				if (now[i] != Settings.CCvalue[i])
-				{
-					Info($"DataUpdate(): CCvalue[{i}] changed from {now[i]} to {Settings.CCvalue[i]}");
-					now[i] = Settings.CCvalue[i];
-				}
+			return;
 		}
 
 		/// <summary>
@@ -59,6 +72,18 @@ namespace SimHubPlugin
 		/// <param name="pluginManager"></param>
 		public void End(PluginManager pluginManager)
 		{
+			string s = "End():\n";
+
+			for (byte i = 0; i < now.Length; i++)
+				if (now[i] != Settings.CCvalue[i])
+				{
+					s += $"\tCCvalue[{i}] changed from {now[i]} to {Settings.CCvalue[i]}\n";
+					now[i] = Settings.CCvalue[i];
+				}
+
+			if (8 < s.Length)
+				Info(s);
+
 			Settings.CCvalue[0] = 5;
 			Settings.CCvalue[1] = 6;
 			this.SaveCommonSettings("GeneralSettings", Settings);
@@ -74,11 +99,11 @@ namespace SimHubPlugin
 
 // Load settings
 			Settings = this.ReadCommonSettings<MysterySettings>("GeneralSettings", () => new MysterySettings());
-			this.AttachDelegate("expect5", () => Settings.CCvalue[0]);
-			this.AttachDelegate("expect6", () => Settings.CCvalue[1]);
-			this.AttachDelegate("Unexpected.InitCount", () => Settings.CCvalue[2]);
-			Settings.CCvalue[2]++;
-			Settings.CCvalue[1] = Settings.CCvalue[1];
+			Attach(0);
+			Attach(1);
+			Attach(2);
+			Info($"Init() InitCount:  {++Settings.CCvalue[2]}");
+			Settings.CCvalue[1] = Settings.CCvalue[1];								// matters in MIDIio; not here..??
 		}																			// Init()
 	}
 }
